@@ -5,18 +5,20 @@ import java.util.List;
 public class Helpers {
 	
 	/**
-	 * Get the first index in a list at which the value is greater than the 
-	 * given comparable. Returns list.size() if search term is greater than 
-	 * all elements in the list.
+	 * Given a list of keys in an intermediate node, get the index of the child
+	 * that should be searched for the given search term.
 	 * @param list list of elements
 	 * @param searchTerm value to look for
-	 * @return first index in list such that list[index] > searchTerm
+	 * @return if searchTerm < list[1]: 0 </br>
+	 * else if searchTerm >= list[list.size() - 1]: list.size() - 1 </br>
+	 * else: the last index less than the search term
 	 */
-	public static <T extends Comparable<T>> int firstIndexGreater(List<T> list, T searchTerm) {
-		for (int i=0; i<list.size(); i++)
+	public static <T extends Comparable<T>> int chooseChildFromKeys(List<T> list, T searchTerm) {
+		for (int i=0; i<list.size(); i++) {
 			if (searchTerm.compareTo(list.get(i)) < 0) 
-				return i;
-		return list.size();
+				return i == 0 ? 0 : i - 1;
+		}
+		return list.size() - 1;
 	}
 	
 	/**

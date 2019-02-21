@@ -26,9 +26,6 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 		// find where the key should go in the sorted list
 		int insertIndex = Helpers.firstIndexGreaterOrEqual(this.keys, key);
 		
-		// set min if lowest element
-		if (insertIndex == 0) this.min = key;
-		
 		// if key at index is equal to given key, replace value, don't insert
 		if (Helpers.elementAtIndexEqualsKey(this.keys, insertIndex, key)) {
 			// must set key too because keys are equivalent according to the compare()
@@ -52,7 +49,6 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 		LeafNode<K, V> newNode = new LeafNode<K, V>(this.mc);
 		newNode.keys.addAll(this.keys.subList(splitIndex, this.keys.size()));
 		newNode.values.addAll(this.values.subList(splitIndex, this.values.size()));
-		newNode.min = newNode.keys.get(0);
 		
 		// replace this node with first half
 		this.keys = new ArrayList<>(this.keys.subList(0, splitIndex));
@@ -69,15 +65,15 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 		// if key to delete not found, return
 		if (!Helpers.elementAtIndexEqualsKey(this.keys, deleteIndex, key)) return false;
 		
+		// before deleting anything, record the lowest value in this
+		K minBeforeRemoval = this.getMin();
+		
 		// remove key value pair
 		this.keys.remove(deleteIndex);
 		this.values.remove(deleteIndex);
 		
 		// if leaf is not empty, return
-		if (this.keys.size() > 0) {
-			this.min = this.keys.get(0);
-			return false;
-		}
+		if (this.keys.size() > 0) return false;
 		
 		// if neighbor is null, delete this node
 		if (neighbor == null) return true;
@@ -89,26 +85,22 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 		
 		// if neighbor has enough keys, take one of them
 
-		// calculate where to insert to this and remove from neighbor
-		int insertionLocation, removalLocation;
-		if (neighborLeafNode.min.compareTo(this.min) < 0) {
-			insertionLocation = 0;
+		// using the recorded min key, calculate where to remove from neighbor
+		int removalLocation;
+		if (neighborLeafNode.getMin().compareTo(minBeforeRemoval) < 0) {
 			removalLocation = neighborLeafNode.keys.size() - 1;
 		} else {
-			insertionLocation = this.keys.size();
 			removalLocation = 0;
 		}
 		
 		// transfer key
-		this.keys.add(insertionLocation, neighborLeafNode.keys.get(removalLocation));
+		this.keys.add(neighborLeafNode.keys.get(removalLocation));
 		neighborLeafNode.keys.remove(removalLocation);
 		
 		// transfer value
-		this.values.add(insertionLocation, neighborLeafNode.values.get(removalLocation));
+		this.values.add(neighborLeafNode.values.get(removalLocation));
 		neighborLeafNode.values.remove(removalLocation);
 		
-		this.min = this.keys.get(0);
-		neighborLeafNode.min = neighborLeafNode.keys.get(0);
 		return false;
 	}
 	
@@ -137,10 +129,6 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 		// check that keys do not exceed max children
 		if (this.keys.size() > this.mc) throw new AssertionError("Leaf node: #keys > max children");
 		
-		// check this.min
-		if (!this.min.equals(min)) 
-			throw new AssertionError("Intermediate node: expected min to be " + min + " but found " + this.min);
-		
 		// check that all keys are within range
 		for (K key : this.keys) {
 			if (key.compareTo(min) < 0) 
@@ -154,10 +142,6 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 			if (this.keys.get(i).compareTo(this.keys.get(i+1)) >= 0) 
 				throw new AssertionError("Leaf node: keys not in order");
 		}
-		
-		// check that this is at least half full
-//		if (!this.isRoot && this.keys.size() < this.mc/2) 
-//			throw new AssertionError("Leaf node: #keys < maxChidlren/2");
 	}
 	
 	@Override

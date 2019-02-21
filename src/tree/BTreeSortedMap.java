@@ -27,7 +27,7 @@ public class BTreeSortedMap<K extends Comparable<K>, V> implements SortedMap<K, 
 		
 		// figure out which node (root or newNode) goes first
 		BTreeNode<K, V> firstChild, secondChild;
-		if (root.min.compareTo(newNode.min) < 0) {
+		if (root.getMin().compareTo(newNode.getMin()) < 0) {
 			firstChild = root;
 			secondChild = newNode;
 		} else {
@@ -37,8 +37,8 @@ public class BTreeSortedMap<K extends Comparable<K>, V> implements SortedMap<K, 
 		
 		// add children to new root
 		IntermediateNode<K, V> newRoot = new IntermediateNode<K, V>(this.mc);
-		newRoot.min = firstChild.min;
-		newRoot.keys.add(secondChild.min);
+		newRoot.keys.add(firstChild.getMin());
+		newRoot.keys.add(secondChild.getMin());
 		newRoot.children.add(firstChild);
 		newRoot.children.add(secondChild);
 		

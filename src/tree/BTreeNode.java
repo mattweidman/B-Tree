@@ -11,8 +11,7 @@ import java.util.List;
 public abstract class BTreeNode<K extends Comparable<K>, V> {
 	
 	public final int mc;
-	protected List<K> keys; // max length = mk
-	protected K min; // used for optimization - TODO: make this the first element in keys
+	protected List<K> keys; // max length = mc
 	protected boolean isRoot; // used for testing
 	
 	public BTreeNode(int maxChildren) {
@@ -69,5 +68,13 @@ public abstract class BTreeNode<K extends Comparable<K>, V> {
 	 * @return all of the data in a single node
 	 */
 	protected abstract LeafNode<K, V> toLeafNode();
+	
+	/**
+	 * Convenience method to get the lowest key. Runs in constant time.
+	 * @return lowest key
+	 */
+	protected K getMin() {
+		return this.keys.get(0);
+	}
 	
 }

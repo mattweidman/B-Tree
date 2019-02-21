@@ -34,7 +34,7 @@ public class BTreeTests {
 		
 		// add one level
 		map.insert(6, 6);
-		assertEquals("4 \n"
+		assertEquals("1 4 \n"
 				+ "\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\tLeaf: 4:4 5:5 6:6 ",
 				map.toString());
@@ -43,7 +43,7 @@ public class BTreeTests {
 		// saturate one node
 		map.insert(7, 7);
 		map.insert(8, 8);
-		assertEquals("4 \n"
+		assertEquals("1 4 \n"
 				+ "\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\tLeaf: 4:4 5:5 6:6 7:7 8:8 ",
 				map.toString());
@@ -51,7 +51,7 @@ public class BTreeTests {
 		
 		// add a child node
 		map.insert(9, 9);
-		assertEquals("4 7 \n"
+		assertEquals("1 4 7 \n"
 				+ "\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\tLeaf: 4:4 5:5 6:6 \n"
 				+ "\tLeaf: 7:7 8:8 9:9 ",
@@ -62,7 +62,7 @@ public class BTreeTests {
 		for (int i=10; i<=17; i++) {
 			map.insert(i, i);
 		}
-		assertEquals("4 7 10 13 \n"
+		assertEquals("1 4 7 10 13 \n"
 				+ "\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\tLeaf: 4:4 5:5 6:6 \n"
 				+ "\tLeaf: 7:7 8:8 9:9 \n"
@@ -73,12 +73,12 @@ public class BTreeTests {
 		
 		// split intermediate node
 		map.insert(18, 18);
-		assertEquals("10 \n"
-				+ "\t4 7 \n"
+		assertEquals("1 10 \n"
+				+ "\t1 4 7 \n"
 				+ "\t\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\t\tLeaf: 4:4 5:5 6:6 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
-				+ "\t13 16 \n"
+				+ "\t10 13 16 \n"
 				+ "\t\tLeaf: 10:10 11:11 12:12 \n"
 				+ "\t\tLeaf: 13:13 14:14 15:15 \n"
 				+ "\t\tLeaf: 16:16 17:17 18:18 ",
@@ -118,7 +118,7 @@ public class BTreeTests {
 		
 		// build up to 1 intermediate node
 		for (int i=1; i<=6; i++) map.insert(i, i);
-		assertEquals("4 \n"
+		assertEquals("1 4 \n"
 				+ "\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\tLeaf: 4:4 5:5 6:6 ",
 				map.toString());
@@ -126,7 +126,7 @@ public class BTreeTests {
 		
 		// remove from beginning a leaf
 		map.delete(1);
-		assertEquals("4 \n"
+		assertEquals("2 4 \n"
 				+ "\tLeaf: 2:2 3:3 \n"
 				+ "\tLeaf: 4:4 5:5 6:6 ",
 				map.toString());
@@ -134,7 +134,7 @@ public class BTreeTests {
 		
 		// remove from second position in leaf
 		map.delete(3);
-		assertEquals("4 \n"
+		assertEquals("2 4 \n"
 				+ "\tLeaf: 2:2 \n"
 				+ "\tLeaf: 4:4 5:5 6:6 ",
 				map.toString());
@@ -142,7 +142,7 @@ public class BTreeTests {
 		
 		// empty a leaf, transferring right to left
 		map.delete(2);
-		assertEquals("5 \n"
+		assertEquals("4 5 \n"
 				+ "\tLeaf: 4:4 \n"
 				+ "\tLeaf: 5:5 6:6 ",
 				map.toString());
@@ -150,7 +150,7 @@ public class BTreeTests {
 		
 		// remove from right leaf
 		map.delete(5);
-		assertEquals("6 \n"
+		assertEquals("4 6 \n"
 				+ "\tLeaf: 4:4 \n"
 				+ "\tLeaf: 6:6 ",
 				map.toString());
@@ -164,7 +164,7 @@ public class BTreeTests {
 		// fill tree back up
 		map.delete(4);
 		for (int i=1; i<=6; i++) map.insert(i, i);
-		assertEquals("4 \n"
+		assertEquals("1 4 \n"
 				+ "\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\tLeaf: 4:4 5:5 6:6 ",
 				map.toString());
@@ -174,7 +174,7 @@ public class BTreeTests {
 		map.delete(6);
 		map.delete(4);
 		map.delete(5);
-		assertEquals("3 \n"
+		assertEquals("1 3 \n"
 				+ "\tLeaf: 1:1 2:2 \n"
 				+ "\tLeaf: 3:3 ",
 				map.toString());
@@ -187,12 +187,12 @@ public class BTreeTests {
 		
 		// make a 2-layered tree
 		for (int i=1; i<=18; i++) map.insert(i, i);
-		assertEquals("10 \n"
-				+ "\t4 7 \n"
+		assertEquals("1 10 \n"
+				+ "\t1 4 7 \n"
 				+ "\t\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\t\tLeaf: 4:4 5:5 6:6 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
-				+ "\t13 16 \n"
+				+ "\t10 13 16 \n"
 				+ "\t\tLeaf: 10:10 11:11 12:12 \n"
 				+ "\t\tLeaf: 13:13 14:14 15:15 \n"
 				+ "\t\tLeaf: 16:16 17:17 18:18 ",
@@ -201,12 +201,12 @@ public class BTreeTests {
 		
 		// delete nodes so the right side is almost ready to swap
 		for (Integer x : new Integer[] {11, 12, 14, 15, 17, 18}) map.delete(x);
-		assertEquals("10 \n"
-				+ "\t4 7 \n"
+		assertEquals("1 10 \n"
+				+ "\t1 4 7 \n"
 				+ "\t\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\t\tLeaf: 4:4 5:5 6:6 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
-				+ "\t13 16 \n"
+				+ "\t10 13 16 \n"
 				+ "\t\tLeaf: 10:10 \n"
 				+ "\t\tLeaf: 13:13 \n"
 				+ "\t\tLeaf: 16:16 ",
@@ -215,12 +215,12 @@ public class BTreeTests {
 		
 		// remove a leaf
 		map.delete(10);
-		assertEquals("13 \n"
-				+ "\t4 7 \n"
+		assertEquals("1 13 \n"
+				+ "\t1 4 7 \n"
 				+ "\t\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\t\tLeaf: 4:4 5:5 6:6 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
-				+ "\t16 \n"
+				+ "\t13 16 \n"
 				+ "\t\tLeaf: 13:13 \n"
 				+ "\t\tLeaf: 16:16 ",
 				map.toString());
@@ -230,13 +230,13 @@ public class BTreeTests {
 		map.insert(-1, -1);
 		map.insert(-2, -2);
 		map.insert(-3, -3);
-		assertEquals("13 \n"
-				+ "\t1 4 7 \n"
+		assertEquals("-3 13 \n"
+				+ "\t-3 1 4 7 \n"
 				+ "\t\tLeaf: -3:-3 -2:-2 -1:-1 \n"
 				+ "\t\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\t\tLeaf: 4:4 5:5 6:6 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
-				+ "\t16 \n"
+				+ "\t13 16 \n"
 				+ "\t\tLeaf: 13:13 \n"
 				+ "\t\tLeaf: 16:16 ",
 				map.toString());
@@ -244,12 +244,12 @@ public class BTreeTests {
 		
 		// delete from the right to force a left to right swap
 		map.delete(16);
-		assertEquals("7 \n"
-				+ "\t1 4 \n"
+		assertEquals("-3 7 \n"
+				+ "\t-3 1 4 \n"
 				+ "\t\tLeaf: -3:-3 -2:-2 -1:-1 \n"
 				+ "\t\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\t\tLeaf: 4:4 5:5 6:6 \n"
-				+ "\t13 \n"
+				+ "\t7 13 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
 				+ "\t\tLeaf: 13:13 ",
 				map.toString());
@@ -257,12 +257,12 @@ public class BTreeTests {
 		
 		// fill the right side back up
 		for (int i=10; i<=18; i++) map.insert(i, i);
-		assertEquals("7 \n"
-				+ "\t1 4 \n"
+		assertEquals("-3 7 \n"
+				+ "\t-3 1 4 \n"
 				+ "\t\tLeaf: -3:-3 -2:-2 -1:-1 \n"
 				+ "\t\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\t\tLeaf: 4:4 5:5 6:6 \n"
-				+ "\t10 13 16 \n"
+				+ "\t7 10 13 16 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
 				+ "\t\tLeaf: 10:10 11:11 12:12 \n"
 				+ "\t\tLeaf: 13:13 14:14 15:15 \n"
@@ -272,11 +272,11 @@ public class BTreeTests {
 		
 		// empty most of left side
 		for (Integer x : new Integer[] {-3, -2, -1, 2, 3, 5, 6}) map.delete(x);
-		assertEquals("7 \n"
-				+ "\t4 \n"
+		assertEquals("1 7 \n"
+				+ "\t1 4 \n"
 				+ "\t\tLeaf: 1:1 \n"
 				+ "\t\tLeaf: 4:4 \n"
-				+ "\t10 13 16 \n"
+				+ "\t7 10 13 16 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
 				+ "\t\tLeaf: 10:10 11:11 12:12 \n"
 				+ "\t\tLeaf: 13:13 14:14 15:15 \n"
@@ -286,11 +286,11 @@ public class BTreeTests {
 		
 		// force a right to left swap
 		map.delete(4);
-		assertEquals("10 \n"
-				+ "\t7 \n"
+		assertEquals("1 10 \n"
+				+ "\t1 7 \n"
 				+ "\t\tLeaf: 1:1 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
-				+ "\t13 16 \n"
+				+ "\t10 13 16 \n"
 				+ "\t\tLeaf: 10:10 11:11 12:12 \n"
 				+ "\t\tLeaf: 13:13 14:14 15:15 \n"
 				+ "\t\tLeaf: 16:16 17:17 18:18 ",
@@ -301,7 +301,7 @@ public class BTreeTests {
 		map.delete(1);
 		map.delete(7);
 		map.delete(8);
-		assertEquals("10 13 16 \n"
+		assertEquals("9 10 13 16 \n"
 				+ "\tLeaf: 9:9 \n"
 				+ "\tLeaf: 10:10 11:11 12:12 \n"
 				+ "\tLeaf: 13:13 14:14 15:15 \n"
@@ -311,13 +311,13 @@ public class BTreeTests {
 		
 		// cause a split again
 		for (int i=-2; i<=8; i++) map.insert(i, i);
-		assertEquals("10 \n"
-				+ "\t1 4 7 \n"
+		assertEquals("-2 10 \n"
+				+ "\t-2 1 4 7 \n"
 				+ "\t\tLeaf: -2:-2 -1:-1 0:0 \n"
 				+ "\t\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\t\tLeaf: 4:4 5:5 6:6 \n"
 				+ "\t\tLeaf: 7:7 8:8 9:9 \n"
-				+ "\t13 16 \n"
+				+ "\t10 13 16 \n"
 				+ "\t\tLeaf: 10:10 11:11 12:12 \n"
 				+ "\t\tLeaf: 13:13 14:14 15:15 \n"
 				+ "\t\tLeaf: 16:16 17:17 18:18 ",
@@ -326,12 +326,12 @@ public class BTreeTests {
 		
 		// almost empty the right side
 		for (int i=9; i<=18; i++) map.delete(i);
-		assertEquals("7 \n"
-				+ "\t1 4 \n"
+		assertEquals("-2 7 \n"
+				+ "\t-2 1 4 \n"
 				+ "\t\tLeaf: -2:-2 -1:-1 0:0 \n"
 				+ "\t\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\t\tLeaf: 4:4 5:5 6:6 \n"
-				+ "\t8 \n"
+				+ "\t7 8 \n"
 				+ "\t\tLeaf: 7:7 \n"
 				+ "\t\tLeaf: 8:8 ",
 				map.toString());
@@ -339,7 +339,7 @@ public class BTreeTests {
 		
 		// force a left to right merge
 		map.delete(8);
-		assertEquals("1 4 7 \n"
+		assertEquals("-2 1 4 7 \n"
 				+ "\tLeaf: -2:-2 -1:-1 0:0 \n"
 				+ "\tLeaf: 1:1 2:2 3:3 \n"
 				+ "\tLeaf: 4:4 5:5 6:6 \n"
