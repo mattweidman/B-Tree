@@ -62,6 +62,57 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 	}
 	
 	@Override
+	public boolean delete(K key, BTreeNode<K, V> neighbor) {
+		// find the key if it exists
+		int deleteIndex = Helpers.firstIndexGreaterOrEqual(this.keys, key);
+		
+		// if key to delete not found, return
+		if (!Helpers.elementAtIndexEqualsKey(this.keys, deleteIndex, key)) return false;
+		
+		// remove key value pair
+		this.keys.remove(deleteIndex);
+		this.values.remove(deleteIndex);
+		
+		// if leaf is not empty, return
+		if (this.keys.size() > 0) {
+			this.min = this.keys.get(0);
+			return false;
+		}
+		
+		// if neighbor is null, delete this node
+		if (neighbor == null) return true;
+		
+		LeafNode<K, V> neighborLeafNode = (LeafNode<K, V>)neighbor;
+		
+		// if neighbor does not have enough keys, tell parent to delete this node
+		if (neighborLeafNode.keys.size() <= 1) return true;
+		
+		// if neighbor has enough keys, take one of them
+
+		// calculate where to insert to this and remove from neighbor
+		int insertionLocation, removalLocation;
+		if (neighborLeafNode.min.compareTo(this.min) < 0) {
+			insertionLocation = 0;
+			removalLocation = neighborLeafNode.keys.size() - 1;
+		} else {
+			insertionLocation = this.keys.size();
+			removalLocation = 0;
+		}
+		
+		// transfer key
+		this.keys.add(insertionLocation, neighborLeafNode.keys.get(removalLocation));
+		neighborLeafNode.keys.remove(removalLocation);
+		
+		// transfer value
+		this.values.add(insertionLocation, neighborLeafNode.values.get(removalLocation));
+		neighborLeafNode.values.remove(removalLocation);
+		
+		this.min = this.keys.get(0);
+		neighborLeafNode.min = neighborLeafNode.keys.get(0);
+		return false;
+	}
+	
+	@Override
 	public int size() {
 		return this.keys.size();
 	}
@@ -105,13 +156,18 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 		}
 		
 		// check that this is at least half full
-		if (!this.isRoot && this.keys.size() < this.mc/2) 
-			throw new AssertionError("Leaf node: #keys < maxChidlren/2");
+//		if (!this.isRoot && this.keys.size() < this.mc/2) 
+//			throw new AssertionError("Leaf node: #keys < maxChidlren/2");
 	}
 	
 	@Override
 	public int getDepth() {
 		return 0;
+	}
+	
+	@Override
+	public LeafNode<K, V> toLeafNode() {
+		return this;
 	}
 
 }

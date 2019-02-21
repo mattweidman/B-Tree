@@ -12,7 +12,7 @@ public abstract class BTreeNode<K extends Comparable<K>, V> {
 	
 	public final int mc;
 	protected List<K> keys; // max length = mk
-	protected K min; // used for optimization
+	protected K min; // used for optimization - TODO: make this the first element in keys
 	protected boolean isRoot; // used for testing
 	
 	public BTreeNode(int maxChildren) {
@@ -37,6 +37,15 @@ public abstract class BTreeNode<K extends Comparable<K>, V> {
 	public abstract BTreeNode<K, V> insert(K key, V value);
 	
 	/**
+	 * Delete a key value pair.
+	 * @param key key to delete
+	 * @param neighbor sibling node to take data from if this node needs more;
+	 * must be same type as this
+	 * @return whether this node should be deleted by parent
+	 */
+	public abstract boolean delete(K key, BTreeNode<K, V> neighbor);
+	
+	/**
 	 * @return number of key value pairs in tree with this node as root
 	 */
 	public abstract int size();
@@ -54,5 +63,11 @@ public abstract class BTreeNode<K extends Comparable<K>, V> {
 	 * @return depth of tree starting with this as root
 	 */
 	protected abstract int getDepth();
+	
+	/**
+	 * Convert the entire tree into a single leaf node, ignoring size constraints.
+	 * @return all of the data in a single node
+	 */
+	protected abstract LeafNode<K, V> toLeafNode();
 	
 }

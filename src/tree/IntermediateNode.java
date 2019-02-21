@@ -56,6 +56,93 @@ public class IntermediateNode<K extends Comparable<K>, V> extends BTreeNode<K, V
 	}
 	
 	@Override
+	public boolean delete(K key, BTreeNode<K, V> neighbor) {
+		// find where to delete
+		int deleteIndex = Helpers.firstIndexGreater(this.keys, key);
+		
+		// delete from child, using neighbor for extra data
+		BTreeNode<K, V> deleteChild = this.children.get(deleteIndex);
+		BTreeNode<K, V> deleteChildNeighbor = deleteIndex == 0 
+				? this.children.get(1)
+				: this.children.get(deleteIndex - 1);
+		boolean shouldDeleteChild = deleteChild.delete(key, deleteChildNeighbor);
+		
+		// reset key pointing to neighbor
+		int neighborIndex = deleteIndex == 0 ? 1 : deleteIndex - 1;
+		if (neighborIndex == 0) this.min = deleteChildNeighbor.min;
+		else this.keys.set(neighborIndex - 1, deleteChildNeighbor.min);
+		
+		// delete child if necessary
+		if (shouldDeleteChild) {
+			if (deleteIndex == 0) {
+				this.min = this.keys.get(0);
+				this.keys.remove(0);
+			} else {
+				this.keys.remove(deleteIndex - 1);
+			}
+			this.children.remove(deleteIndex);
+		}
+		
+		// if child not deleted, reset its key
+		else {
+			if (deleteIndex == 0) this.min = deleteChild.min;
+			else this.keys.set(deleteIndex - 1, deleteChild.min);
+		}
+		
+		this.min = this.children.get(0).min;
+		
+		// if there are enough children in this node, return
+		if (this.children.size() >= this.mc/2) return false;
+		
+		// If the neighbor is null, this must be the root. Tell the data structure
+		// to replace this if there is only one child.
+		if (neighbor == null) return this.children.size() == 1;
+		
+		IntermediateNode<K, V> neighborIntermediateNode = (IntermediateNode<K, V>)neighbor;
+
+		// if neighbor does not have enough keys, move data and tell parent to delete this node
+		if (this.children.size() + neighborIntermediateNode.children.size() < this.mc) {
+			if (neighborIntermediateNode.min.compareTo(this.min) < 0) {
+				neighborIntermediateNode.keys.add(this.min);
+				neighborIntermediateNode.keys.addAll(this.keys);
+				neighborIntermediateNode.children.addAll(this.children);
+			} else {
+				neighborIntermediateNode.keys.add(0, neighborIntermediateNode.min);
+				neighborIntermediateNode.keys.addAll(0, this.keys);
+				neighborIntermediateNode.min = this.min;
+				neighborIntermediateNode.children.addAll(0, this.children);
+			}
+			return true;
+		}
+		
+		// if neighbor has enough keys, take one of them
+
+		// if neighbor comes before this node, take one from the end of neighbor and move it to the beginning of this
+		if (neighborIntermediateNode.min.compareTo(this.min) < 0) {
+			int neighborNumChildren = neighborIntermediateNode.children.size();
+			
+			this.keys.add(0, this.min);
+			this.min = neighborIntermediateNode.keys.get(neighborNumChildren - 2);
+			this.children.add(0, neighborIntermediateNode.children.get(neighborNumChildren - 1));
+			
+			neighborIntermediateNode.keys.remove(neighborNumChildren - 2);
+			neighborIntermediateNode.children.remove(neighborNumChildren - 1);
+		} 
+		
+		// else, take one from the beginning of neighbor and move it to the end of this
+		else {
+			this.keys.add(neighborIntermediateNode.min);
+			this.children.add(neighborIntermediateNode.children.get(0));
+			
+			neighborIntermediateNode.min = neighborIntermediateNode.keys.get(0);
+			neighborIntermediateNode.keys.remove(0);
+			neighborIntermediateNode.children.remove(0);
+		}
+		
+		return false;
+	}
+	
+	@Override
 	public int size() {
 		int count = 0;
 		for (BTreeNode<K, V> node : this.children) {
@@ -138,6 +225,25 @@ public class IntermediateNode<K extends Comparable<K>, V> extends BTreeNode<K, V
 			if (childDepth != depthFound) throw new AssertionError("Sibling depths not equal");
 		}
 		return depthFound;
+	}
+	
+	@Override
+	public LeafNode<K, V> toLeafNode() {
+		List<K> keys = new ArrayList<>();
+		List<V> values = new ArrayList<>();
+		
+		for (BTreeNode<K, V> child : this.children) {
+			LeafNode<K, V> leaf = child.toLeafNode();
+			keys.addAll(leaf.keys);
+			values.addAll(leaf.values);
+		}
+		
+		LeafNode<K, V> acc = new LeafNode<>(this.mc);
+		acc.keys = keys;
+		acc.values = values;
+		acc.min = keys.get(0);
+		
+		return acc;
 	}
 
 }

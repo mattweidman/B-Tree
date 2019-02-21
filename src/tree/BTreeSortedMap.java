@@ -5,17 +5,17 @@ public class BTreeSortedMap<K extends Comparable<K>, V> implements SortedMap<K, 
 	// Root of B tree. Null if map is empty.
 	private BTreeNode<K, V> root;
 	
-	private final int maxKeys;
+	private final int mc;
 	
 	public BTreeSortedMap(int maxKeys) {
-		this.maxKeys = maxKeys;
+		this.mc = maxKeys;
 	}
 
 	@Override
 	public void insert(K key, V value) {
 		// if tree is empty, make the root into a leaf and add pair
 		if (root == null) {
-			root = new LeafNode<K, V>(this.maxKeys);
+			root = new LeafNode<K, V>(this.mc);
 			root.isRoot = true;
 			root.insert(key, value);
 			return;
@@ -36,7 +36,7 @@ public class BTreeSortedMap<K extends Comparable<K>, V> implements SortedMap<K, 
 		}
 		
 		// add children to new root
-		IntermediateNode<K, V> newRoot = new IntermediateNode<K, V>(this.maxKeys);
+		IntermediateNode<K, V> newRoot = new IntermediateNode<K, V>(this.mc);
 		newRoot.min = firstChild.min;
 		newRoot.keys.add(secondChild.min);
 		newRoot.children.add(firstChild);
@@ -50,8 +50,22 @@ public class BTreeSortedMap<K extends Comparable<K>, V> implements SortedMap<K, 
 
 	@Override
 	public void delete(K key) {
-		// TODO Auto-generated method stub
+		// if root is null, nothing you can do
+		if (this.root == null) return;
 		
+		// delete
+		if (this.root.delete(key, null)) {
+			
+			// if intermediate node only has one child, replace it with its child 
+			if (this.root instanceof IntermediateNode) {
+				this.root = ((IntermediateNode<K, V>) this.root).children.get(0);
+			} 
+			
+			// if leaf node is empty, replace it with null
+			else {
+				this.root = null;
+			}
+		}
 	}
 
 	@Override
