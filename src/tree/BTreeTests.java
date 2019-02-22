@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -349,6 +350,107 @@ public class BTreeTests {
 	}
 	
 	@Test
+	public void testGetRange() {
+		BTreeSortedMap<Integer, Integer> map = new BTreeSortedMap<>(5);
+		
+		// empty map
+		assertEquals("[]", map.getRange(0, 0).toString());
+		
+		// one value, in range
+		map.insert(1, 1);
+		assertEquals("[(1, 1)]", map.getRange(0, 5).toString());
+		assertEquals("[(1, 1)]", map.getRange(1, 5).toString());
+		
+		// one value, out of range
+		assertEquals("[]", map.getRange(0, 1).toString());
+		assertEquals("[]", map.getRange(2, 5).toString());
+		
+		// test with a bigger map
+		for (int i=1; i<=18; i++) map.insert(i, i);
+		assertEquals(this.getContinuousList(1, 4), map.getRange(-2, 4).toString());
+		assertEquals(this.getContinuousList(3, 17), map.getRange(3, 17).toString());
+		assertEquals(this.getContinuousList(9, 19), map.getRange(9, 25).toString());
+		assertEquals(this.getContinuousList(1, 19), map.getRange(-10, 25).toString());
+		
+		// delete some nodes to see if it still works
+		for (int i=10; i<=18; i++) map.delete(i);
+		assertEquals(this.getContinuousList(1, 6), map.getRange(-2, 6).toString());
+		assertEquals(this.getContinuousList(2, 8), map.getRange(2, 8).toString());
+		assertEquals(this.getContinuousList(7, 10), map.getRange(7, 11).toString());
+		assertEquals(this.getContinuousList(1, 10), map.getRange(-10, 25).toString());
+		
+		// insert again
+		for (int i=1; i<=18; i++) map.insert(i, i);
+		map.verify(1, 19);
+		assertEquals(this.getContinuousList(1, 4), map.getRange(-2, 4).toString());
+		assertEquals(this.getContinuousList(3, 17), map.getRange(3, 17).toString());
+		assertEquals(this.getContinuousList(9, 19), map.getRange(9, 25).toString());
+		assertEquals(this.getContinuousList(1, 19), map.getRange(-10, 25).toString());
+	}
+	
+	@Test
+	public void testGetPage() {
+		BTreeSortedMap<Integer, Integer> map = new BTreeSortedMap<>(5);
+		
+		// empty map
+		assertEquals("[]", map.getPage(0, 0).toString());
+		
+		// one value, in range
+		map.insert(1, 1);
+		assertEquals("[(1, 1)]", map.getPage(0, 5).toString());
+		assertEquals("[(1, 1)]", map.getPage(1, 5).toString());
+		assertEquals("[(1, 1)]", map.getPage(1, 1).toString());
+		
+		// one value, out of range
+		assertEquals("[]", map.getPage(2, 5).toString());
+		assertEquals("[]", map.getPage(1, 0).toString());
+		
+		// test with a bigger map
+		for (int i=1; i<=18; i++) map.insert(i, i);
+		assertEquals(this.getContinuousList(1, 5), map.getPage(-2, 4).toString());
+		assertEquals(this.getContinuousList(3, 17), map.getPage(3, 14).toString());
+		assertEquals(this.getContinuousList(9, 19), map.getPage(9, 25).toString());
+		assertEquals(this.getContinuousList(1, 19), map.getPage(-10, 25).toString());
+		assertEquals(this.getContinuousList(1, 19), map.getPage(25).toString());
+		assertEquals(this.getContinuousList(1, 4), map.getPage(3).toString());
+		
+		// delete some nodes to see if it still works
+		map.delete(18);
+		assertEquals(this.getContinuousList(7, 18), map.getPage(7, 11).toString());
+		map.delete(17);
+		assertEquals(this.getContinuousList(7, 17), map.getPage(7, 11).toString());
+		map.delete(16);
+		assertEquals(this.getContinuousList(7, 16), map.getPage(7, 11).toString());
+		map.delete(15);
+		assertEquals(this.getContinuousList(7, 15), map.getPage(7, 11).toString());
+		map.delete(14);
+		assertEquals(this.getContinuousList(7, 14), map.getPage(7, 11).toString());
+		map.delete(13);
+		assertEquals(this.getContinuousList(7, 13), map.getPage(7, 11).toString());
+		map.delete(12);
+		assertEquals(this.getContinuousList(7, 12), map.getPage(7, 11).toString());
+		map.delete(11);
+		assertEquals(this.getContinuousList(7, 11), map.getPage(7, 11).toString());
+		map.delete(10);
+		assertEquals(this.getContinuousList(1, 7), map.getPage(-2, 6).toString());
+		assertEquals(this.getContinuousList(2, 8), map.getPage(2, 6).toString());
+		assertEquals(this.getContinuousList(7, 10), map.getPage(7, 11).toString());
+		assertEquals(this.getContinuousList(1, 10), map.getPage(-10, 25).toString());
+		assertEquals(this.getContinuousList(1, 10), map.getPage(25).toString());
+		assertEquals(this.getContinuousList(1, 4), map.getPage(3).toString());
+		
+		// insert again
+		for (int i=1; i<=18; i++) map.insert(i, i);
+		map.verify(1, 19);
+		assertEquals(this.getContinuousList(1, 5), map.getPage(-2, 4).toString());
+		assertEquals(this.getContinuousList(3, 17), map.getPage(3, 14).toString());
+		assertEquals(this.getContinuousList(9, 19), map.getPage(9, 25).toString());
+		assertEquals(this.getContinuousList(1, 19), map.getPage(-10, 25).toString());
+		assertEquals(this.getContinuousList(1, 19), map.getPage(25).toString());
+		assertEquals(this.getContinuousList(1, 4), map.getPage(3).toString());
+	}
+	
+	@Test
 	public void randomInsertTestCases() {
 		this.runRandomInsertTestCase(-1000, 1000, 1000, 4, false);
 	}
@@ -462,6 +564,12 @@ public class BTreeTests {
 		
 		// make sure reference and treemap have same number of pairs
 		assertEquals(reference.size(), treeMap.size());
+	}
+	
+	private String getContinuousList(int start, int end) {
+		List<KeyValuePair<Integer, Integer>> list = new LinkedList<>();
+		for (int i=start; i<end; i++) list.add(new KeyValuePair<Integer, Integer>(i, i));
+		return list.toString();
 	}
 
 }

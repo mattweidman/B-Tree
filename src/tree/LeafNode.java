@@ -1,11 +1,13 @@
 package tree;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 	
 	protected List<V> values; // max length = mk
+	protected LeafNode<K, V> previous, next; // used for getRange
 
 	public LeafNode(int maxKeys) {
 		super(maxKeys);
@@ -54,6 +56,12 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 		this.keys = new ArrayList<>(this.keys.subList(0, splitIndex));
 		this.values = new ArrayList<>(this.values.subList(0, splitIndex));
 		
+		// create links to the new node
+		newNode.next = this.next;
+		newNode.previous = this;
+		if (this.next != null) this.next.previous = newNode;
+		this.next = newNode;
+		
 		return newNode;
 	}
 	
@@ -75,13 +83,16 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 		// if leaf is not empty, return
 		if (this.keys.size() > 0) return false;
 		
-		// if neighbor is null, delete this node
-		if (neighbor == null) return true;
+		// if neighbor is null or doesn't have enough keys, delete this node
+		if (neighbor == null || neighbor.keys.size() <= 1) {
+			// remove links to this node
+			if (this.previous != null) this.previous.next = this.next;
+			if (this.next != null) this.next.previous = this.previous;
+			
+			return true;
+		}
 		
 		LeafNode<K, V> neighborLeafNode = (LeafNode<K, V>)neighbor;
-		
-		// if neighbor does not have enough keys, tell parent to delete this node
-		if (neighborLeafNode.keys.size() <= 1) return true;
 		
 		// if neighbor has enough keys, take one of them
 
@@ -152,6 +163,59 @@ public class LeafNode<K extends Comparable<K>, V> extends BTreeNode<K, V> {
 	@Override
 	public LeafNode<K, V> toLeafNode() {
 		return this;
+	}
+
+	@Override
+	public List<KeyValuePair<K, V>> getRange(K keyStart, K keyEnd) {
+		LeafNode<K, V> node = this;
+		List<KeyValuePair<K, V>> allEntries = new LinkedList<>();
+		
+		// iterative because this loop could be long and we don't want a stack overflow error
+		while (node != null) {
+			List<KeyValuePair<K, V>> nodeEntries = node.getEntriesInRange(keyStart, keyEnd);
+			allEntries.addAll(nodeEntries);
+			if (node != this && nodeEntries.size() < node.keys.size()) break;
+			node = node.next;
+		}
+		
+		return allEntries;
+	}
+	
+	@Override
+	public List<KeyValuePair<K, V>> getPage(K keyStart, int numElements) {
+		LeafNode<K, V> node = this;
+		List<KeyValuePair<K, V>> allEntries = new LinkedList<>();
+		int elementsCounted = 0;
+		int indexInLeaf = Helpers.firstIndexGreaterOrEqual(this.keys, keyStart);
+		
+		// if indexInLeaf >= leaf size, that means no keys were found
+		if (indexInLeaf >= this.keys.size()) return new LinkedList<>();
+		
+		// iterative because this loop could be long and we don't want a stack overflow error
+		while (node != null && elementsCounted < numElements) {
+			allEntries.add(new KeyValuePair<K, V>(node.keys.get(indexInLeaf), node.values.get(indexInLeaf)));
+			
+			elementsCounted++;
+			indexInLeaf++;
+			if (indexInLeaf == node.keys.size()) {
+				indexInLeaf = 0;
+				node = node.next;
+			}
+		}
+		
+		return allEntries;
+	}
+	
+	private List<KeyValuePair<K, V>> getEntriesInRange(K keyStart, K keyEnd) {
+		List<KeyValuePair<K, V>> entries = new LinkedList<>();
+		
+		for (int i=0; i<this.keys.size(); i++) {
+			K key = this.keys.get(i);
+			if (keyStart.compareTo(key) <= 0 && key.compareTo(keyEnd) < 0)
+				entries.add(new KeyValuePair<K, V>(key, this.values.get(i)));
+		}
+		
+		return entries;
 	}
 
 }

@@ -45,6 +45,28 @@ public abstract class BTreeNode<K extends Comparable<K>, V> {
 	public abstract boolean delete(K key, BTreeNode<K, V> neighbor);
 	
 	/**
+	 * Get a sorted list of all key value pairs in this map that lie within 
+	 * a certain range. List is expected to start under this node, but does
+	 * not have to end under it - leaves are linked together so traversal over
+	 * all intermediate nodes is not necessary.
+	 * @param keyStart first key to find
+	 * @param keyEnd key to end on
+	 * @return list of key value pairs where the first one is under this leaf
+	 */
+	public abstract List<KeyValuePair<K, V>> getRange(K keyStart, K keyEnd);
+	
+	/**
+	 * Get a sorted list of all key value pairs in this map of a certain length,
+	 * starting with a certain key. List is expected to start under this node, but 
+	 * does not have to end under it - leaves are linked together so traversal over
+	 * all intermediate nodes is not necessary.
+	 * @param keyStart first key to find
+	 * @param numValues number of pairs
+	 * @return list of key value pairs where the first one is under this leaf
+	 */
+	public abstract List<KeyValuePair<K, V>> getPage(K keyStart, int numElements);
+	
+	/**
 	 * @return number of key value pairs in tree with this node as root
 	 */
 	public abstract int size();

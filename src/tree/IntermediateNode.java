@@ -217,4 +217,16 @@ public class IntermediateNode<K extends Comparable<K>, V> extends BTreeNode<K, V
 		return acc;
 	}
 
+	@Override
+	public List<KeyValuePair<K, V>> getRange(K keyStart, K keyEnd) {
+		return this.children.get(Helpers.chooseChildFromKeys(this.keys, keyStart))
+				.getRange(keyStart, keyEnd);
+	}
+	
+	@Override
+	public List<KeyValuePair<K, V>> getPage(K keyStart, int numElements) {
+		return this.children.get(Helpers.chooseChildFromKeys(this.keys, keyStart))
+				.getPage(keyStart, numElements);
+	}
+
 }

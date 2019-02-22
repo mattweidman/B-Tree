@@ -1,5 +1,8 @@
 package tree;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class BTreeSortedMap<K extends Comparable<K>, V> implements SortedMap<K, V> {
 	
 	// Root of B tree. Null if map is empty.
@@ -74,15 +77,21 @@ public class BTreeSortedMap<K extends Comparable<K>, V> implements SortedMap<K, 
 	}
 
 	@Override
-	public Iterable<Entry<K, V>> getRange(K keyStart, K keyEnd) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<KeyValuePair<K, V>> getRange(K keyStart, K keyEnd) {
+		if (this.root == null) return new LinkedList<>();
+		return this.root.getRange(keyStart, keyEnd);
 	}
 
 	@Override
-	public Iterable<Entry<K, V>> getRange(K keyStart, int numValues) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<KeyValuePair<K, V>> getPage(K keyStart, int numElements) {
+		if (this.root == null) return new LinkedList<>();
+		return this.root.getPage(keyStart, numElements);
+	}
+
+	@Override
+	public List<KeyValuePair<K, V>> getPage(int numElements) {
+		if (root == null) return new LinkedList<>();
+		return this.getPage(this.root.getMin(), numElements);
 	}
 	
 	@Override 
